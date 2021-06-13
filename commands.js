@@ -2,7 +2,7 @@ const fetch=require('node-fetch');
 
 const giffy=require("./command/giffy.js")
 const gif=require("./command/gif.js")
-const mov=require("./command/mov.js")
+const mov = require("./command/movie-fetch.js")
 
 const commands={
     giffy, gif, mov
