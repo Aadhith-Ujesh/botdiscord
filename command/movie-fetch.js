@@ -4,22 +4,26 @@ const Discord = require("discord.js")
 const searchurl = "https://www.imdb.com/find?s=tt&ref_=fn_tt&q=";
 const url = 'https://www.imdb.com/'
 
-function findRating(imdbID){
-    fetch(`${url}${imdbID}`)
+async function findRating(msg,imdbID,name){
+    await fetch(`${url}${imdbID}`)
     .then(response => response.text())
     .then(body => {
         const $ = cheerio.load(body);
-        const $synopsis=$('#__next > main > div > section.ipc-page-background.ipc-page-background--base.TitlePage__StyledPageBackground-wzlr49-0.dDUGgO > section > div:nth-child(4) > section > section > div.TitleBlock__Container-sc-1nlhx7j-0.hglRHk > div.TitleBlock__RatingContainer-sc-1nlhx7j-2.hBRWEt > div > div:nth-child(1) > a > div > div > div.AggregateRatingButton__ContentWrap-sc-1il8omz-0.cMcGnJ > div.AggregateRatingButton__Rating-sc-1il8omz-2.ckpPOV > span.AggregateRatingButton__RatingScore-sc-1il8omz-1.fhMjqK')
+        const $image = $('#title-overview-widget > div.vital > div.slate_wrapper > div.poster > a > img')
+        const image =$image.attr('src');
+        const $synopsis=$('#title-overview-widget > div.plot_summary_wrapper.localized > div.plot_summary')
+        console.log(image);
         console.log($synopsis.text())
-        return $synopsis.text()
+        const syn =$synopsis.text()
+        card(msg,image,name,syn);
     });
 }
 
-async function card(msg,rate,image,name){
+function card(msg,image,name,syn){
     const exampleEmbed = new Discord.MessageEmbed()
         .setTitle(name)
         .setImage(image)
-        .setDescription("Rating : " + rate)
+        .setDescription(syn)
     msg.channel.send(exampleEmbed);
 }
 module.exports = function(msg,args){
@@ -28,13 +32,11 @@ module.exports = function(msg,args){
     .then(body => {
         const $ = cheerio.load(body);
         const $findtitle = $('td.result_text > a');
-        const $findimage = $('table > tbody > tr:nth-child(1) > td.primary_photo > a > img');
         const $findname = $('table > tbody > tr:nth-child(1) > td.result_text > a');
         const title= $findtitle.attr('href');
-        const image= $findimage.attr('src')
         const name = $findname .text()
-        const rate = findRating(title)
-        console.log(rate,name,image);
-        card(msg,rate,image,name);
+        console.log(name,title);
+        setTimeout(findRating,2000,msg,title,name);
+        
 });
 }
