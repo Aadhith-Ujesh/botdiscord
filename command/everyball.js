@@ -1,29 +1,7 @@
 const cheerio = require("cheerio");
 const fetch = require("node-fetch");
-const msg = "sheikh"
-var link = ''
-const url = 'https://www.espncricinfo.com'
-
-async function get_match_url(){
-    await fetch('https://www.espncricinfo.com/live-cricket-score')
-    .then(res => res.text())
-    .then(body => {
-        const $ = cheerio.load(body)
-        $('a.match-info-link-FIXTURES').each(function(i,element)
-        {   
-            const match = $(element).attr('href');
-            const arr = match.split('/')[3];
-            
-            if(arr.indexOf(msg) != -1){
-                link = match;
-            }
-        })
-    }
-        )
-    get_evry_ball()
-    setInterval(get_evry_ball,30000)
-};
-
+const url = `https://www.espncricinfo.com`
+const link = `/series/dhaka-premier-division-twenty20-2021-1264572/sheikh-jamal-dhanmondi-club-vs-old-dohs-sports-club-56th-match-1266486/live-cricket-score`
 
 function get_evry_ball(){
     fetch(`${url}${link}`)
@@ -31,6 +9,7 @@ function get_evry_ball(){
     .then(body => {
         const $ = cheerio.load(body)
         const comment = $('.match-comment-run').text().slice(0,1)
+
         console.log(comment)
         if(comment == 'W')
         {
@@ -45,5 +24,4 @@ function get_evry_ball(){
     });
 }
 
-
-get_match_url()
+get_evry_ball()
