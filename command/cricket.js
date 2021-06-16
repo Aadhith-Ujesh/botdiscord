@@ -25,8 +25,8 @@ async function get_match_url(){
 };
 
 
-function get_evry_ball(){
-    fetch(`${url}${link}`)
+async function get_evry_ball(){
+    await fetch(`${url}${link}`)
     .then(response => response.text())
     .then(body => {
         const $ = cheerio.load(body)
@@ -44,6 +44,5 @@ function get_evry_ball(){
         }
     });
 }
-
-
+//hi bomma
 get_match_url()
