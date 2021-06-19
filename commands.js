@@ -3,9 +3,10 @@ const fetch=require('node-fetch');
 const giffy=require("./command/giffy.js")
 const gif=require("./command/gif.js")
 const mov = require("./command/movie-fetch.js")
+const cric = require("./command/cricket.js")
 
 const commands={
-    giffy, gif, mov
+    giffy, gif, mov , cric
 };
 
 module.exports =async function (msg){
