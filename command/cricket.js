@@ -10,8 +10,13 @@ async function get_evry_ball(msg){
     .then(body => {
         const $ = cheerio.load(body)
         const comment = $('.match-comment-run').text().slice(0,1)
-        const over = parseFloat($('.match-comment-over').text().slice(0,4))
-        // console.log(over)
+        const fifty = $('.match-comment-long-text').text();
+        const sover =$('.match-comment-over').text().slice(0,4)
+        const over = parseFloat(sover)
+        if(sover[sover.length-1]==1)
+            {
+                get_every_over(msg)
+            }
         if(over > prev){
             prev = over
             if(comment == 'W')
@@ -24,7 +29,7 @@ async function get_evry_ball(msg){
             {
                 const four =$('.match-comment-short-text').text().split("runs")[0]
                 console.log(four + "runs")
-                msg.reply(wicket)
+                msg.reply(four)
             }
             else if(comment=='•' || comment == '1')
             {
@@ -39,9 +44,42 @@ async function get_evry_ball(msg){
                 msg.reply(two)
             }            
             console.log(comment)
+            if(fifty.indexOf('fifty')!=-1 || fifty.indexOf('50')!=-1 || fifty.indexOf('FIFTY')!=-1 ||  fifty.indexOf('Fifty')!=-1)
+            {
+                console.log(fifty);
+                msg.reply(fifty)
+            }
+            else if(fifty.indexOf('hunderd')!=-1 || fifty.indexOf('100')!=-1 ||fifty.indexOf('Hunderd')!=-1 ||fifty.indexOf('hunderd')!=-1){
+                console.log(fifty)
+                msg.reply(fifty)
+            }
+            else if(fifty.indexOf('two hunderd')!=-1 || fifty.indexOf('200')!=-1 ||fifty.indexOf('TWO HUNDRED')!=-1 ||fifty.indexOf('Two Hunderd')!=-1){
+                console.log(fifty)
+                msg.reply(fifty);
+            }
         }
     });
 }
+
+async function get_every_over(msg)
+{
+    await fetch(`${url}`)
+    .then(response => response.text())
+    .then(body => {
+    const $ = cheerio.load(body)
+    var i = 0
+    $('.comment-over-end-caps').each(function(i,element){
+        if( i >= 2 )
+        {return 0}
+        a += $(element).text() + " "
+        i++
+    })
+    console.log(a)
+    msg.reply(a)
+    });
+}
+
+
 module.exports = async function(msg,args){
     await fetch('https://www.espncricinfo.com/live-cricket-score')
     .then(res => res.text())
@@ -61,3 +99,5 @@ module.exports = async function(msg,args){
     get_evry_ball(msg)
     setInterval(get_evry_ball,15000,msg)
 };
+
+
