@@ -11,4 +11,4 @@ const replies=[
 module.exports =function (msg,args){
 const id=  Math.floor(Math.random() * replies.length);
 msg.reply(replies[id]);
-};
+}
