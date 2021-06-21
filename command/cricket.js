@@ -3,21 +3,24 @@ const fetch = require("node-fetch");
 var link = ''
 const url = 'https://www.espncricinfo.com'
 var prev = 0
+var clear =''
 
 async function get_evry_ball(msg){
+    
     await fetch(`${url}${link}`)
     .then(response => response.text())
     .then(body => {
-        const $ = cheerio.load(body)
-        const comment = $('.match-comment-run').text().slice(0,1)
+        var $ = cheerio.load(body)
+        var comment = $('.match-comment-run').text().slice(0,1)
+        console.log(comment)
         var fifty=""
         $('.match-comment-long-text > p').each(function(i,element){
             fifty= $(element).text();
             return false  
         })
         console.log(fifty)
-        const sover =$('.match-comment-over').text().slice(0,4)
-        const over = parseFloat(sover)
+        var sover =$('.match-comment-over').text().slice(0,4)
+        var over = parseFloat(sover)
         if(sover[sover.length-1]==1)
             {
                 get_every_over(msg)
@@ -74,7 +77,7 @@ async function get_every_over(msg)
     await fetch(`${url}`)
     .then(response => response.text())
     .then(body => {
-    const $ = cheerio.load(body)
+    var $ = cheerio.load(body)
     var i = 0
     var a=""
     $('.comment-over-end-caps').each(function(i,element){
@@ -83,21 +86,29 @@ async function get_every_over(msg)
         a += $(element).text() + " "
         i++
     })
-    // console.log(a)
-    // msg.reply(a)
+   
     });
 }  
 
 
 module.exports = async function(msg,args){
+    if(args=='stop')
+    {   
+        bool=0
+        msg.reply("Thank for using");
+        clearInterval(clear)
+        prev=0
+        return false
+    }
+
     await fetch('https://www.espncricinfo.com/live-cricket-score')
     .then(res => res.text())
     .then(body => {
         const $ = cheerio.load(body)
         $('a.match-info-link-FIXTURES').each(function(i,element)
         {   
-            const match = $(element).attr('href');
-            const arr = match.split('/')[3];
+            var match = $(element).attr('href');
+            var arr = match.split('/')[3];
             if(arr.indexOf(args) != -1){
                 link = match;
                 console.log(link)
@@ -105,6 +116,8 @@ module.exports = async function(msg,args){
             }
         })
     })
+    
     get_evry_ball(msg)
-    setInterval(get_evry_ball,15000,msg)
+    clear = setInterval(get_evry_ball,15000,msg)
+    
 };
