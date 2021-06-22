@@ -2,8 +2,6 @@ const cheerio = require("cheerio");
 const fetch = require("node-fetch");
 const Discord = require("discord.js")
 
-
-
 var link = ''
 const url = 'https://www.espncricinfo.com'
 
@@ -58,6 +56,8 @@ async function get_summary(msg,link)
     var momc =''
     var desc =''
     var img=''
+    var teams = []
+    var scores = []
     await fetch(`${url}${link}`)
     .then(response => response.text())
     .then(body => {
