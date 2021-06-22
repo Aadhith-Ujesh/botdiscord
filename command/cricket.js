@@ -47,7 +47,38 @@ function find_country(args){
     }
 }
 
-
+async function get_summary(msg,link)
+{
+    var result=''
+    var mom = ''
+    var momc =''
+    var desc =''
+    var img=''
+    await fetch(`${url}${link}`)
+    .then(response => response.text())
+    .then(body => {
+        var $ = cheerio.load(body)
+        desc = $('.match-info-MATCH .description').text()
+        $('.match-info-MATCH .name').each(function(i,element){
+            teams.push($(element).text())
+        })
+        $('.match-info-MATCH .score').each(function(i,element){
+            scores.push($(element).text())
+            })
+        result = $('.match-info-MATCH .status-text').text()
+        mom = $('.best-player-name a').text()
+        momc = mom + ' - ' + $('.best-player-team-name').text()
+        })
+    const Embed = new Discord.MessageEmbed()
+        .setTitle("Result")
+        .addField("Description:",desc)
+        .addField(teams[0], scores[0], true)
+        .addField(teams[1], scores[1], true)
+        .setDescription(result)
+        .addField("Man of the Match",momc)
+        // .addField(mom,momc,true)
+    msg.channel.send(Embed);    
+ }
 async function get_evry_ball(msg){
     
     await fetch(`${url}${link}`)
@@ -116,16 +147,19 @@ async function get_evry_ball(msg){
             {
                 comment = "Fifty"
                 card(msg,comment,fifty)
+                get_score(msg)
                 // msg.reply(fifty)
             }
             else if(fifty.indexOf('hunderd')!=-1 || fifty.indexOf('100')!=-1 ||fifty.indexOf('Hunderd')!=-1 ||fifty.indexOf('hunderd')!=-1){
                 comment = "Hundred"
                 card(msg,comment,fifty)
+                get_score(msg)
                 // msg.reply(fifty)
             }
             else if(fifty.indexOf('two hunderd')!=-1 || fifty.indexOf('200')!=-1 ||fifty.indexOf('TWO HUNDRED')!=-1 ||fifty.indexOf('Two Hunderd')!=-1){
                 comment = "Double Hundred"
                 card(msg,comment,fifty)
+                get_score(msg)
                 // msg.reply(fifty);
             }
         }
@@ -180,13 +214,16 @@ module.exports = async function(msg,args){
             if(arr.indexOf(args) != -1){
                 link = match;
                 console.log(link)
-                link = link.replace("full-scorecard" , "live-cricket-score")
+                if(link.indexOf("full-scorecard")!=-1)
+                {
+                    get_summary(msg,link)
+                }
                 return false
             }
         })
-    })
-    
+        
     get_evry_ball(msg)
     clear = setInterval(get_evry_ball,15000,msg)
     
-};
+});
+}
