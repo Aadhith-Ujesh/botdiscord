@@ -1,9 +1,52 @@
 const cheerio = require("cheerio");
 const fetch = require("node-fetch");
+const Discord = require("discord.js")
+
+var teams = []
+var scores = []
+
 var link = ''
 const url = 'https://www.espncricinfo.com'
+
+
 var prev = 0
 var clear =''
+
+var cob = 0
+
+async function get_score(msg){
+    await fetch(`${url}${link}`)
+    .then(response => response.text())
+    .then(body => {
+        var $ = cheerio.load(body)
+        $('.match-info-MATCH .name').each(function(i,element){
+            teams.push($(element).text())
+            // console.log(teams)
+        })
+        $('.match-info-MATCH .score').each(function(i,element){
+            scores.push($(element).text())
+            
+        })
+    })
+    console.log(teams)
+    console.log(scores)
+    const embed = new Discord.MessageEmbed()
+        .setTitle("Score")
+        .addField(teams[0], scores[0], true)
+        .addField(teams[1], scores[1], true)
+    msg.channel.send(embed);
+}
+
+function find_country(args){
+    var country = {"wi" : "west-indies" , "sa" : "south-africa" , "ind" : "india" , "eng" : "england" , 
+                "nz" : "new-zealand" , "aus" : "australia" , "sl" : "sri-lanka" , "ban" : "bangladesh"}
+    if(args in country){
+        args = country[args]
+    console.log(args)
+    return args
+    }
+}
+
 
 async function get_evry_ball(msg){
     
@@ -13,17 +56,17 @@ async function get_evry_ball(msg){
         var $ = cheerio.load(body)
         var comment = $('.match-comment-run').text().slice(0,1)
         console.log(comment)
-        var fifty=""
+        var fifty = ""
         $('.match-comment-long-text > p').each(function(i,element){
             fifty= $(element).text();
             return false  
         })
         console.log(fifty)
-        var sover =$('.match-comment-over').text().slice(0,4)
+        var sover = $('.match-comment-over').text().slice(0,4)
         var over = parseFloat(sover)
         if(sover[sover.length-1]==1)
             {
-                get_every_over(msg)
+                get_every_over()
             }
         if(over > prev){
             prev = over
@@ -31,48 +74,65 @@ async function get_evry_ball(msg){
             {
                 const wicket = $('.match-comment-wicket').text()
                 console.log(wicket)
-                msg.reply(wicket)
+                comment+="icket"
+                card(msg,comment,wicket)
+                get_score(msg)
+                // msg.reply(wicket)
+
             }
             else if(comment=='4' || comment == '6')
             {
+                cob+=1
                 const four =$('.match-comment-short-text').text().split("runs")[0]
                 x=four + "runs"
                 console.log(x)
-                msg.reply(x)
+                card(msg,comment,x)
+                if(cob>4){
+                    get_score(msg)
+                    cob = 0
+                }
+                // msg.reply(x)
+
             }
             else if(comment=='•' || comment == '1')
             {
                 const dot =$('.match-comment-short-text').text().split("run")[0]
                 console.log(dot + "run")
                 x=dot+"run"
-                msg.reply(x)
+                card(msg,comment,x)
+                get_score(msg)
+                // msg.reply(x)
             }
             else if(comment=='2' || comment=='3')
             {
                 const two =$('.match-comment-short-text').text().split("runs")[0]
                 console.log(two + "runs")
                 x=two + "runs"
-                msg.reply(x)
+                card(msg,comment,x)
+                // msg.reply(x)
             }            
             console.log(comment)
             if(fifty.indexOf('fifty')!=-1 || fifty.indexOf('50')!=-1 || fifty.indexOf('FIFTY')!=-1 ||  fifty.indexOf('Fifty')!=-1)
             {
-                // console.log(fifty);
-                msg.reply(fifty)
+                comment = "Fifty"
+                card(msg,comment,fifty)
+                // msg.reply(fifty)
             }
             else if(fifty.indexOf('hunderd')!=-1 || fifty.indexOf('100')!=-1 ||fifty.indexOf('Hunderd')!=-1 ||fifty.indexOf('hunderd')!=-1){
-                // console.log(fifty)
-                msg.reply(fifty)
+                comment = "Hundred"
+                card(msg,comment,fifty)
+                // msg.reply(fifty)
             }
             else if(fifty.indexOf('two hunderd')!=-1 || fifty.indexOf('200')!=-1 ||fifty.indexOf('TWO HUNDRED')!=-1 ||fifty.indexOf('Two Hunderd')!=-1){
-                // console.log(fifty)
-                msg.reply(fifty);
+                comment = "Double Hundred"
+                card(msg,comment,fifty)
+                // msg.reply(fifty);
             }
         }
     });
 }
 
-async function get_every_over(msg)
+async function get_every_over()
 {
     await fetch(`${url}`)
     .then(response => response.text())
@@ -90,6 +150,12 @@ async function get_every_over(msg)
     });
 }  
 
+function card(msg,comment,comm){
+    const Embed = new Discord.MessageEmbed()
+        .setTitle(comment)
+        .setDescription(comm)
+    msg.channel.send(Embed);
+}
 
 module.exports = async function(msg,args){
     if(args=='stop')
@@ -98,9 +164,11 @@ module.exports = async function(msg,args){
         msg.reply("Thank for using");
         clearInterval(clear)
         prev=0
+        teams = []
+        scores = []
         return false
     }
-
+    args = find_country(args)
     await fetch('https://www.espncricinfo.com/live-cricket-score')
     .then(res => res.text())
     .then(body => {
@@ -112,6 +180,7 @@ module.exports = async function(msg,args){
             if(arr.indexOf(args) != -1){
                 link = match;
                 console.log(link)
+                link = link.replace("full-scorecard" , "live-cricket-score")
                 return false
             }
         })
