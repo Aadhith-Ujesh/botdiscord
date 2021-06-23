@@ -1,18 +1,57 @@
 const cheerio = require("cheerio");
 const fetch = require("node-fetch");
 const Discord = require("discord.js")
-
 var teams = []
 var scores = []
-
 var link = ''
 const url = 'https://www.espncricinfo.com'
-
-
 var prev = 0
 var clear =''
-
 var cob = 0
+var search=[]
+
+async function other_match(msg,args)
+{   console.log(typeof(args));
+    // search = args.split(" ");
+    search = args.join('+')
+    console.log(search)
+    await fetch(`https://www.google.com/search?q=${search}`)
+        .then(res => res.text())
+        .then(body => {
+            const $ = cheerio.load(body)
+            link = $('#rso > div:nth-child(1) > div > div > div > div.yuRUbf > a').attr("href")
+            other_match_details(msg)
+        })
+    }
+
+async function other_match_details(msg)
+{
+    await fetch(`${link}`)
+    .then(response => response.text())
+    .then(body => {
+        var $ = cheerio.load(body)
+        var $ = cheerio.load(body)
+        desc = $('.match-info-MATCH .description').text()
+        $('.match-info-MATCH .name').each(function(i,element){
+            teams.push($(element).text())
+        })
+        $('.match-info-MATCH .score').each(function(i,element){
+            scores.push($(element).text())
+            })
+        result = $('.match-info-MATCH .status-text').text()
+        mom = $('.best-player-name a').text()
+        momc = mom + ' - ' + $('.best-player-team-name').text()
+    })
+    const Embed = new Discord.MessageEmbed()
+        .setTitle("Result")
+        .addField("Description:",desc)
+        .addField(teams[0], scores[0], true)
+        .addField(teams[1], scores[1], true)
+        .setDescription(result)
+        .addField("Man of the Match",momc)
+        // .addField(mom,momc,true)
+    msg.channel.send(Embed);
+}
 
 async function get_score(msg){
     await fetch(`${url}${link}`)
@@ -43,8 +82,9 @@ function find_country(args){
     if(args in country){
         args = country[args]
     console.log(args)
-    return args
+    
     }
+    return args
 }
 
 async function get_summary(msg,link)
@@ -203,6 +243,7 @@ module.exports = async function(msg,args){
         return false
     }
     args = find_country(args)
+    console.log(args)
     await fetch('https://www.espncricinfo.com/live-cricket-score')
     .then(res => res.text())
     .then(body => {
@@ -225,5 +266,13 @@ module.exports = async function(msg,args){
     get_evry_ball(msg)
     clear = setInterval(get_evry_ball,15000,msg)
     
-});
+    if (!(link))
+    {  
+        other_match(msg,args) 
+    }
+
+})
 }
+    
+
+
