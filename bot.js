@@ -16,4 +16,4 @@ const commandHandler=require("./commands");
 
 client.on('message',commandHandler);
 
-
+//https://discord.com/oauth2/authorize?client_id=852490059517263873&scope=bot
